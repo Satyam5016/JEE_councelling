@@ -1,0 +1,55 @@
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import userRoutes from './routes/userRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import videoRoutes from './routes/videoRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import { clerkAuth } from './middleware/auth.js';
+
+dotenv.config();
+
+const app = express();
+
+// Set PORT from .env or default to 5001
+const PORT = process.env.PORT || 5001;
+
+// CORS configuration
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+
+// Clerk Authentication Middlewares
+app.use(clerkAuth);
+
+// Routes
+app.use('/api/user', userRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/videos', videoRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/book-counselling', bookingRoutes);
+
+// Database connection
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch((err) => console.error('MongoDB connection error:', err));
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('Unhandled Error:', err);
+    res.status(500).json({
+        success: false,
+        message: 'An internal server error occurred.',
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

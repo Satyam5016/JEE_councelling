@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #0B1A2F;
+  --color-brand-dark: #07111F;
+  --color-brand-orange: #FF5722;
+  --color-brand-orange-hover: #F4511E;
+  --color-primary-blue: #1E3A8A;
+  --color-text-light: #E2E8F0;
+  --color-text-muted: #94A3B8;
+  --color-bg-light: #F8FAFC;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-light text-slate-800 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+}
