@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, User, Mail, Phone, Trophy, MapPin, BookOpen, Send, Loader2 } from 'lucide-react';
-import { bookCounselling } from '../../utils/api';
+import { useAuth } from '@clerk/clerk-react';
+import { bookCounselling, setAuthToken } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 const BookingModal = ({ isOpen, onClose, userProfile }) => {
+    const { getToken } = useAuth();
     const [formData, setFormData] = useState({
         name: userProfile?.name || '',
         email: userProfile?.email || '',
@@ -46,6 +48,9 @@ const BookingModal = ({ isOpen, onClose, userProfile }) => {
 
         setLoading(true);
         try {
+            const token = await getToken();
+            setAuthToken(token);
+
             const { data } = await bookCounselling(formData);
             if (data.success) {
                 toast.success('Counselling session booked! Check your email.');
