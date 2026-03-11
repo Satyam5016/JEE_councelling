@@ -140,7 +140,7 @@ const Services = () => {
                     <div className="bg-white rounded-3xl p-8 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.05)] border border-slate-100 flex flex-col pt-12">
                         <h3 className="text-2xl font-bold text-center text-slate-800 mb-4">Basic</h3>
                         <div className="flex items-baseline justify-center gap-1 mb-4">
-                            <span className="text-5xl font-extrabold text-[#1E3A8A]">₹199</span>
+                            <span className="text-5xl font-extrabold text-[#1E3A8A]">₹1</span>
                             <span className="text-slate-500 font-medium">/session</span>
                         </div>
                         <p className="text-center text-slate-600 text-sm mb-8 px-4">Perfect for students who need quick guidance</p>

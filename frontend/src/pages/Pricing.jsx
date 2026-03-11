@@ -9,8 +9,8 @@ const plans = [
     {
         id: 'basic',
         name: 'Basic',
-        price: '₹199',
-        priceValue: 199,
+        price: '₹1',
+        priceValue: 1,
         description: 'Start Smart with JEE Predictions',
         icon: Zap,
         color: 'from-slate-500 to-slate-700',

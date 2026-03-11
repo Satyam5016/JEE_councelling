@@ -161,9 +161,7 @@ const BasicPage = () => {
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                             <div className="flex items-center gap-4 bg-white px-8 py-4 rounded-3xl border border-slate-200 shadow-sm">
-                                <span className="text-slate-400 line-through text-lg font-bold">₹299</span>
-                                <span className="text-4xl font-black text-slate-900">₹199</span>
-                                <span className="text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">SAVE 33%</span>
+                                <span className="text-4xl font-black text-slate-900">₹1</span>
                             </div>
                             <button
                                 onClick={handlePayment}
@@ -216,7 +214,7 @@ const BasicPage = () => {
 
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter italic">Why pay ₹199?</h2>
+                        <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter italic">Why pay ₹1?</h2>
                         <div className="w-20 h-1.5 bg-emerald-500 mx-auto rounded-full"></div>
                     </div>
 
@@ -257,7 +255,7 @@ const BasicPage = () => {
                                 <p className="text-sky-400 font-bold uppercase tracking-widest text-sm mb-12">Full Counselling Season Validity</p>
 
                                 <div className="flex items-baseline justify-center gap-2 mb-12">
-                                    <span className="text-8xl font-black text-white tracking-tighter">₹199</span>
+                                    <span className="text-8xl font-black text-white tracking-tighter">₹1</span>
                                     <span className="text-slate-400 font-bold text-sm uppercase tracking-widest">/ one-time</span>
                                 </div>
 

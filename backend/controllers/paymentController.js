@@ -22,7 +22,7 @@ const getRazorpay = () => {
 
 // Plan pricing (in paise — Razorpay uses smallest currency unit)
 const PLAN_PRICES = {
-    basic: 19900,       // ₹199
+    basic: 100,         // ₹1
     elite: 99900,       // ₹999
     premium: 49900,     // ₹499
     doc_verif: 199900,  // ₹1,999
