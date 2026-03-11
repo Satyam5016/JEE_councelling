@@ -1,6 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const getBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+    
+    // Smart fallback for production
+    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+        console.warn('⚠️ [API] VITE_API_URL is missing in production! API calls will likely fail.');
+        // If the backend is on the same Vercel project (monorepo), we might use current origin
+        // But for this project, they are separate. We keep the fallback to help debugging.
+    }
+    
+    return 'http://localhost:5001';
+};
+
+const API_BASE_URL = getBaseUrl();
 console.log(`[API] Initialized with Base URL: ${API_BASE_URL}`);
 
 const api = axios.create({
