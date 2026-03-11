@@ -59,21 +59,39 @@ const ElitePage = () => {
                 description: 'Elite Plan Upgrade',
                 order_id: orderData.orderId,
                 handler: async (response) => {
+                    console.log('[ElitePage] Razorpay handler triggered with:', response);
                     try {
+                        console.log('[ElitePage] Getting fresh token...');
                         const currentToken = await getToken();
+                        console.log('[ElitePage] Token obtained:', currentToken ? 'yes' : 'NO TOKEN');
                         setAuthToken(currentToken);
+                        console.log('[ElitePage] Calling verifyPayment API...');
                         const verifyRes = await verifyPayment({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                         });
+                        console.log('[ElitePage] Verify response:', verifyRes.data);
                         if (verifyRes.data.success) {
                             window.location.href = '/payment-success?plan=elite';
+                        } else {
+                            console.error('[ElitePage] Verify returned success=false:', verifyRes.data);
+                            alert('Verification failed: ' + (verifyRes.data.message || 'Unknown error'));
                         }
                     } catch (err) {
-                        console.error('Verification failed:', err);
+                        console.error('[ElitePage] Verification failed:', err);
+                        console.error('[ElitePage] Error response:', err.response?.data);
                         alert('Payment verification failed.');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 3000);
                     }
+                },
+                modal: {
+                    ondismiss: () => {
+                        console.log('[ElitePage] Razorpay modal dismissed.');
+                        setLoading(false);
+                    },
                 },
                 prefill: {
                     name: user.fullName || '',
@@ -81,6 +99,7 @@ const ElitePage = () => {
                 },
                 theme: { color: '#4f46e5' },
             };
+            console.log('[ElitePage] Opening Razorpay...');
             const rzp = new window.Razorpay(options);
             rzp.open();
         } catch (error) {

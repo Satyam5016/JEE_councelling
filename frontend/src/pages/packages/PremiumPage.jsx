@@ -35,21 +35,39 @@ const PremiumPage = () => {
                 description: 'Premium Plan Booking',
                 order_id: orderData.orderId,
                 handler: async (response) => {
+                    console.log('[PremiumPage] Razorpay handler triggered with:', response);
                     try {
+                        console.log('[PremiumPage] Getting fresh token...');
                         const currentToken = await getToken();
+                        console.log('[PremiumPage] Token obtained:', currentToken ? 'yes' : 'NO TOKEN');
                         setAuthToken(currentToken);
+                        console.log('[PremiumPage] Calling verifyPayment API...');
                         const verifyRes = await verifyPayment({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                         });
+                        console.log('[PremiumPage] Verify response:', verifyRes.data);
                         if (verifyRes.data.success) {
                             window.location.href = '/payment-success?plan=premium';
+                        } else {
+                            console.error('[PremiumPage] Verify returned success=false:', verifyRes.data);
+                            alert('Verification failed: ' + (verifyRes.data.message || 'Unknown error'));
                         }
                     } catch (err) {
-                        console.error('Verification failed:', err);
+                        console.error('[PremiumPage] Verification failed:', err);
+                        console.error('[PremiumPage] Error response:', err.response?.data);
                         alert('Payment verification failed.');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 3000);
                     }
+                },
+                modal: {
+                    ondismiss: () => {
+                        console.log('[PremiumPage] Razorpay modal dismissed.');
+                        setLoading(false);
+                    },
                 },
                 prefill: {
                     name: user.fullName || '',
@@ -57,6 +75,7 @@ const PremiumPage = () => {
                 },
                 theme: { color: '#d97706' },
             };
+            console.log('[PremiumPage] Opening Razorpay...');
             const rzp = new window.Razorpay(options);
             rzp.open();
         } catch (error) {

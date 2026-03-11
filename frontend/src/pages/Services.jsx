@@ -60,24 +60,40 @@ const Services = () => {
                 description: `Payment for ${plan} package`,
                 order_id: orderId,
                 handler: async (response) => {
+                    console.log('[Services] Razorpay handler triggered with:', response);
                     try {
+                        console.log('[Services] Getting fresh token...');
                         const currentToken = await getToken();
+                        console.log('[Services] Token obtained:', currentToken ? 'yes' : 'NO TOKEN');
                         setAuthToken(currentToken);
 
+                        console.log('[Services] Calling verifyPayment API...');
                         const verifyRes = await verifyPayment({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                         });
+                        console.log('[Services] Verify response:', verifyRes.data);
 
                         if (verifyRes.data.success) {
                             toast.success('Payment successful! Your plan has been updated.');
                             window.location.href = '/dashboard';
+                        } else {
+                            toast.error(verifyRes.data.message || 'Verification failed.');
                         }
                     } catch (err) {
-                        console.error('Verification error:', err);
+                        console.error('[Services] Verification error:', err);
+                        console.error('[Services] Error response:', err.response?.data);
                         toast.error('Payment verification failed. Please contact support.');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 3000);
                     }
+                },
+                modal: {
+                    ondismiss: () => {
+                        console.log('[Services] Razorpay modal dismissed.');
+                    },
                 },
                 prefill: {
                     name: user?.fullName || '',

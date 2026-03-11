@@ -65,22 +65,45 @@ const BasicPage = () => {
                 description: 'Basic Plan Upgrade',
                 order_id: orderData.orderId,
                 handler: async (response) => {
+                    console.log('[BasicPage] Razorpay handler triggered with:', response);
                     try {
+                        console.log('[BasicPage] Getting fresh token for verification...');
                         const currentToken = await getToken();
+                        console.log('[BasicPage] Token obtained:', currentToken ? 'yes' : 'NO TOKEN');
                         setAuthToken(currentToken);
+
+                        console.log('[BasicPage] Calling verifyPayment API...');
                         const verifyRes = await verifyPayment({
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                         });
+                        console.log('[BasicPage] Verify response:', verifyRes.data);
+
                         if (verifyRes.data.success) {
                             toast.success('Payment Successful! Plan activated.');
                             window.location.href = '/payment-success?plan=basic';
+                        } else {
+                            console.error('[BasicPage] Verify returned success=false:', verifyRes.data);
+                            toast.error(verifyRes.data.message || 'Verification failed.');
                         }
                     } catch (err) {
-                        console.error('Verification failed:', err);
-                        toast.error('Payment verification failed.');
+                        console.error('[BasicPage] Verification failed:', err);
+                        console.error('[BasicPage] Error response:', err.response?.data);
+                        console.error('[BasicPage] Error status:', err.response?.status);
+                        toast.error('Payment verification failed. Contact support.');
+                        // Fallback: if payment was captured by Razorpay but verify API failed,
+                        // redirect user to dashboard so they can check their plan status
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 3000);
                     }
+                },
+                modal: {
+                    ondismiss: () => {
+                        console.log('[BasicPage] Razorpay modal dismissed by user.');
+                        setLoading(false);
+                    },
                 },
                 prefill: {
                     name: user.fullName || '',
@@ -88,6 +111,7 @@ const BasicPage = () => {
                 },
                 theme: { color: '#0ea5e9' },
             };
+            console.log('[BasicPage] Opening Razorpay with options:', { key: options.key, amount: options.amount, order_id: options.order_id });
             const rzp = new window.Razorpay(options);
             rzp.open();
         } catch (error) {
