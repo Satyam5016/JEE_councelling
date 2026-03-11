@@ -49,15 +49,12 @@ app.use(cors({
         // allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
-        const isAllowed = allowedOrigins.includes(origin) ||
-            origin.endsWith('.vercel.app') ||
-            origin.includes('localhost');
-
-        if (isAllowed) {
+        // Allow any vercel.app subdomain or localhost
+        if (origin.endsWith('.vercel.app') || origin.includes('localhost') || allowedOrigins.includes(origin)) {
             return callback(null, true);
         } else {
             console.log('Blocked by CORS:', origin);
-            return callback(new Error('Not allowed by CORS'), false);
+            return callback(null, false); // Just block, don't throw error to avoid 500
         }
     },
     credentials: true,

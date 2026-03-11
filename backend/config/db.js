@@ -17,8 +17,10 @@ const connectDB = async () => {
     // Diagnostic: Log a redacted version of the URI to verify it's loaded
     const redactedUri = process.env.MONGODB_URI.replace(/:([^@]+)@/, ':****@');
     console.log(`Establishing new MongoDB connection with URI: ${redactedUri.substring(0, 30)}...`);
+
+    try {
         const db = await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            serverSelectionTimeoutMS: 5000,
         });
         console.log(`✅ MongoDB Connected: ${db.connection.host}`);
         return db.connection;
