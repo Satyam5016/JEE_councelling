@@ -5,18 +5,20 @@ let isConnected = false;
 const connectDB = async () => {
     mongoose.set('strictQuery', true);
 
-    if (isConnected) {
+    if (mongoose.connection.readyState === 1) {
         console.log('Using existing MongoDB connection');
-        return;
+        return mongoose.connection;
     }
 
     try {
-        const db = await mongoose.connect(process.env.MONGODB_URI);
-        isConnected = db.connections[0].readyState;
+        console.log('Establishing new MongoDB connection...');
+        const db = await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+        });
         console.log(`✅ MongoDB Connected: ${db.connection.host}`);
+        return db.connection;
     } catch (error) {
         console.error(`❌ MongoDB Connection Error: ${error.message}`);
-        // In serverless, we don't necessarily want to exit the process
         throw error;
     }
 };

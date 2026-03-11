@@ -14,6 +14,24 @@ dotenv.config();
 
 const app = express();
 
+// Middleware to ensure DB connection before any request
+const ensureDB = async (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        try {
+            await connectDB();
+            next();
+        } catch (error) {
+            return res.status(503).json({
+                success: false,
+                message: 'Database connection failed. Please check if your IP is whitelisted in MongoDB Atlas.',
+                error: error.message
+            });
+        }
+    } else {
+        next();
+    }
+};
+
 // Set PORT from .env or default to 5001
 const PORT = process.env.PORT || 5001;
 
@@ -47,6 +65,9 @@ app.use(express.json());
 
 // Clerk Authentication Middlewares
 app.use(clerkAuth);
+
+// Apply DB connection check to all /api routes
+app.use('/api', ensureDB);
 
 // Routes
 app.use('/api/user', userRoutes);
