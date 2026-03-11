@@ -8,6 +8,7 @@ import videoRoutes from './routes/videoRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import { clerkAuth } from './middleware/auth.js';
+import connectDB from './config/db.js';
 
 dotenv.config();
 
@@ -55,9 +56,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/book-counselling', bookingRoutes);
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch((err) => console.error('MongoDB connection error:', err));
+connectDB().catch(err => console.error('Initial DB connection failed:', err));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
