@@ -16,11 +16,15 @@ const app = express();
 
 // Middleware to ensure DB connection before any request
 const ensureDB = async (req, res, next) => {
+    console.log(`[DB Guard] Checking connection for: ${req.method} ${req.originalUrl}`);
     if (mongoose.connection.readyState !== 1) {
+        console.log(`[DB Guard] Current state: ${mongoose.connection.readyState}. Attempting to connect...`);
         try {
             await connectDB();
+            console.log('[DB Guard] Connection successful, proceeding.');
             next();
         } catch (error) {
+            console.error('[DB Guard] Connection FAILED:', error.message);
             return res.status(503).json({
                 success: false,
                 message: 'Database connection failed. Please check if your IP is whitelisted in MongoDB Atlas.',
