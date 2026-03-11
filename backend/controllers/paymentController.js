@@ -123,6 +123,14 @@ export const verifyPayment = async (req, res) => {
 
         console.log(`[Payment] Verifying signature for order: ${razorpay_order_id}`);
 
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            console.error('[Payment] RAZORPAY_KEY_SECRET is missing!');
+            return res.status(500).json({
+                success: false,
+                message: 'Payment system configuration error.',
+            });
+        }
+
         // Verify signature using HMAC SHA256
         const body = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSignature = crypto
@@ -183,17 +191,27 @@ export const verifyPayment = async (req, res) => {
         console.log(`[Payment] Updating plan to ${payment.plan} for user ${updatedUser?._id}`);
 
         // Trigger Inngest event for background processing (email)
-        await inngest.send({
-            name: 'payment/success',
-            data: {
-                userId: updatedUser._id.toString(),
-                userName: updatedUser.name,
-                userEmail: updatedUser.email,
-                plan: payment.plan,
-                paymentId: razorpay_payment_id,
-                amount: payment.amount,
-            },
-        });
+        // Wrapped in try-catch to prevent failure if Inngest is not configured
+        try {
+            if (process.env.INNGEST_EVENT_KEY) {
+                await inngest.send({
+                    name: 'payment/success',
+                    data: {
+                        userId: updatedUser._id.toString(),
+                        userName: updatedUser.name,
+                        userEmail: updatedUser.email,
+                        plan: payment.plan,
+                        paymentId: razorpay_payment_id,
+                        amount: payment.amount,
+                    },
+                });
+                console.log('[Payment] Inngest event sent successfully.');
+            } else {
+                console.warn('[Payment] INNGEST_EVENT_KEY missing, skipping email.');
+            }
+        } catch (inngestErr) {
+            console.error('[Payment] Inngest error (non-fatal):', inngestErr);
+        }
 
         res.status(200).json({
             success: true,
