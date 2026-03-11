@@ -77,6 +77,14 @@ const PremiumPage = () => {
             };
             console.log('[PremiumPage] Opening Razorpay...');
             const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                console.error('[PremiumPage] ❌ PAYMENT FAILED:', response.error);
+                console.error('[PremiumPage] Error Code:', response.error.code);
+                console.error('[PremiumPage] Error Description:', response.error.description);
+                console.error('[PremiumPage] Error Reason:', response.error.reason);
+                alert(`Payment failed: ${response.error.description}`);
+                setLoading(false);
+            });
             rzp.open();
         } catch (error) {
             console.error('Booking error:', error);

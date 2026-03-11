@@ -113,6 +113,18 @@ const BasicPage = () => {
             };
             console.log('[BasicPage] Opening Razorpay with options:', { key: options.key, amount: options.amount, order_id: options.order_id });
             const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                console.error('[BasicPage] ❌ PAYMENT FAILED inside Razorpay:', response.error);
+                console.error('[BasicPage] Error Code:', response.error.code);
+                console.error('[BasicPage] Error Description:', response.error.description);
+                console.error('[BasicPage] Error Source:', response.error.source);
+                console.error('[BasicPage] Error Step:', response.error.step);
+                console.error('[BasicPage] Error Reason:', response.error.reason);
+                console.error('[BasicPage] Order ID:', response.error.metadata?.order_id);
+                console.error('[BasicPage] Payment ID:', response.error.metadata?.payment_id);
+                toast.error(`Payment failed: ${response.error.description}`);
+                setLoading(false);
+            });
             rzp.open();
         } catch (error) {
             console.error('Payment error:', error);

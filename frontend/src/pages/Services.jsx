@@ -105,6 +105,13 @@ const Services = () => {
             };
 
             const paymentObject = new window.Razorpay(options);
+            paymentObject.on('payment.failed', function (response) {
+                console.error('[Services] ❌ PAYMENT FAILED:', response.error);
+                console.error('[Services] Error Code:', response.error.code);
+                console.error('[Services] Error Description:', response.error.description);
+                console.error('[Services] Error Reason:', response.error.reason);
+                toast.error(`Payment failed: ${response.error.description}`);
+            });
             paymentObject.open();
 
         } catch (error) {

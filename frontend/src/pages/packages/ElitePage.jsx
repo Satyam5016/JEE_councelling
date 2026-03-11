@@ -101,6 +101,14 @@ const ElitePage = () => {
             };
             console.log('[ElitePage] Opening Razorpay...');
             const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                console.error('[ElitePage] ❌ PAYMENT FAILED:', response.error);
+                console.error('[ElitePage] Error Code:', response.error.code);
+                console.error('[ElitePage] Error Description:', response.error.description);
+                console.error('[ElitePage] Error Reason:', response.error.reason);
+                alert(`Payment failed: ${response.error.description}`);
+                setLoading(false);
+            });
             rzp.open();
         } catch (error) {
             console.error('Upgrade error:', error);
