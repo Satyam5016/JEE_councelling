@@ -61,10 +61,18 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-    console.error('Unhandled Error:', err);
-    res.status(500).json({
+    console.error('--- Global Error Handler ---');
+    console.error('Time:', new Date().toISOString());
+    console.error('Error Name:', err.name);
+    console.error('Error Message:', err.message);
+    console.error('Stack Trace:', err.stack);
+    console.error('Request Method:', req.method);
+    console.error('Request URL:', req.originalUrl);
+    console.error('---------------------------');
+
+    res.status(err.status || 500).json({
         success: false,
-        message: 'An internal server error occurred.',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'An internal server error occurred.',
     });
 });
 

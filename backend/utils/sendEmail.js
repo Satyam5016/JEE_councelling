@@ -1,6 +1,17 @@
 import nodemailer from 'nodemailer';
 
 const sendEmail = async (options) => {
+    const missing = [];
+    if (!process.env.EMAIL_USER) missing.push('EMAIL_USER');
+    if (!process.env.EMAIL_PASS) missing.push('EMAIL_PASS');
+    if (!process.env.ADMIN_EMAIL) missing.push('ADMIN_EMAIL');
+
+    if (missing.length > 0) {
+        const errorMsg = `Email configuration is incomplete (Missing: ${missing.join(', ')})`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+    }
+
     const transporter = nodemailer.createTransport({
         host: 'smtp-relay.brevo.com',
         port: 587,
@@ -11,7 +22,6 @@ const sendEmail = async (options) => {
     });
 
     console.log('Attempting to send email to:', options.email);
-    console.log('Using EMAIL_USER:', process.env.EMAIL_USER ? 'Present' : 'Missing');
 
     try {
         const mailOptions = {

@@ -44,7 +44,8 @@ const ContactSection = () => {
             }
         } catch (error) {
             console.error('Contact submit error:', error);
-            toast.error(error.response?.data?.message || 'Failed to send message. Please try again.');
+            const errorMsg = error.response?.data?.message || 'Failed to send message. Please try again.';
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

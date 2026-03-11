@@ -65,10 +65,14 @@ export const createContact = async (req, res) => {
 
         // Trigger emails asynchronously 
         try {
-            await Promise.all([
-                sendEmail(adminEmailOptions),
-                sendEmail(userEmailOptions)
-            ]);
+            if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+                await Promise.all([
+                    sendEmail(adminEmailOptions),
+                    sendEmail(userEmailOptions)
+                ]);
+            } else {
+                console.warn('Email credentials missing. Skipping notification emails.');
+            }
         } catch (emailError) {
             console.error('Email sending failed:', emailError);
             // We still return success since the message is saved in DB
@@ -81,10 +85,21 @@ export const createContact = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Contact Controller Error:', error);
+        console.error('--- Contact Controller Error ---');
+        console.error('Error:', error);
+        
+        let message = 'Internal server error';
+        if (error.name === 'ValidationError') {
+            message = Object.values(error.errors).map(val => val.message).join(', ');
+        } else if (error.code === 11000) {
+            message = 'Duplicate field value entered';
+        } else {
+            message = error.message || 'Internal server error';
+        }
+
         res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: message
         });
     }
 };
