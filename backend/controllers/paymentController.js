@@ -73,7 +73,9 @@ export const createOrder = async (req, res) => {
             },
         };
 
+        console.log(`[Payment] Creating order for plan: ${plan}, userId: ${req.dbUser._id}`);
         const order = await rzp.orders.create(options);
+        console.log(`[Payment] Razorpay order created: ${order.id}`);
 
         // Save payment record with 'created' status
         await Payment.create({
@@ -94,7 +96,7 @@ export const createOrder = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error('Create order error:', error);
+        console.error('[Payment] Create order error:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to create payment order.',
@@ -119,6 +121,8 @@ export const verifyPayment = async (req, res) => {
             });
         }
 
+        console.log(`[Payment] Verifying signature for order: ${razorpay_order_id}`);
+
         // Verify signature using HMAC SHA256
         const body = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSignature = crypto
@@ -127,8 +131,10 @@ export const verifyPayment = async (req, res) => {
             .digest('hex');
 
         const isValid = expectedSignature === razorpay_signature;
+        console.log(`[Payment] Signature valid: ${isValid}`);
 
         if (!isValid) {
+            console.error(`[Payment] Invalid signature for order: ${razorpay_order_id}`);
             // Mark payment as failed
             await Payment.findOneAndUpdate(
                 { orderId: razorpay_order_id },
@@ -151,7 +157,10 @@ export const verifyPayment = async (req, res) => {
             { new: true }
         );
 
+        console.log(`[Payment] Payment record updated for order: ${razorpay_order_id}, status: ${payment?.status}`);
+
         if (!payment) {
+            console.error(`[Payment] Payment record not found for order: ${razorpay_order_id}`);
             return res.status(404).json({
                 success: false,
                 message: 'Payment record not found.',
@@ -170,6 +179,8 @@ export const verifyPayment = async (req, res) => {
         } else {
             updatedUser = await User.findById(payment.userId);
         }
+
+        console.log(`[Payment] Updating plan to ${payment.plan} for user ${updatedUser?._id}`);
 
         // Trigger Inngest event for background processing (email)
         await inngest.send({

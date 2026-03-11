@@ -1,8 +1,8 @@
 import { CheckCircle2, XCircle, ChevronRight, FileText, CalendarCheck, BookOpen, Home as HomeIcon, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { createOrder, verifyPayment, setAuthToken, syncUser } from '../utils/api';
 
 const Services = () => {
     const { getToken, isSignedIn } = useAuth();
@@ -32,31 +32,18 @@ const Services = () => {
 
         try {
             const token = await getToken();
+            setAuthToken(token);
 
             // Auto-sync user to backend ensure they exist in DB
             if (user) {
-                await axios.post(
-                    `${import.meta.env.VITE_API_URL}/api/user/sync`,
-                    {
-                        clerkId: user.id,
-                        name: user.fullName || user.firstName || 'User',
-                        email: user.primaryEmailAddress?.emailAddress,
-                    },
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                );
+                await syncUser({
+                    clerkId: user.id,
+                    name: user.fullName || user.firstName || 'User',
+                    email: user.primaryEmailAddress?.emailAddress,
+                });
             }
 
-            const { data } = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/payment/create-order`,
-                { plan },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+            const { data } = await createOrder(plan);
 
             if (!data.success) {
                 toast.error(data.message || 'Failed to create order');
@@ -74,15 +61,14 @@ const Services = () => {
                 order_id: orderId,
                 handler: async (response) => {
                     try {
-                        const verifyRes = await axios.post(
-                            `${import.meta.env.VITE_API_URL}/api/payment/verify`,
-                            response,
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${token}`
-                                }
-                            }
-                        );
+                        const currentToken = await getToken();
+                        setAuthToken(currentToken);
+
+                        const verifyRes = await verifyPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                        });
 
                         if (verifyRes.data.success) {
                             toast.success('Payment successful! Your plan has been updated.');
@@ -94,8 +80,8 @@ const Services = () => {
                     }
                 },
                 prefill: {
-                    name: '',
-                    email: '',
+                    name: user?.fullName || '',
+                    email: user?.primaryEmailAddress?.emailAddress || '',
                 },
                 theme: {
                     color: '#FF5722',
